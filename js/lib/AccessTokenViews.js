@@ -84,7 +84,7 @@ AccessTokenViews.prototype = {
             .then(
             function (userObj) {
                 try {
-                    roles.destroyAccessToken(req.params.token);
+                    roles.destroyAccessToken(req.params.token);          //此处是不是这样访问的: /v1/access_tokens?token=fewjoiWfDWwadf
                     res.json({ ok: true });
                 }
                 catch (ex) {

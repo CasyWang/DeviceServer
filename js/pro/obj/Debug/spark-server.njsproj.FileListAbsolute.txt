@@ -1,0 +1,2 @@
+C:\Users\Administrator\Documents\Spark.IO\Server\js\pro\obj\Debug\spark-server.njsprojResolveAssemblyReference.cache
+C:\Users\Administrator\Documents\Spark.IO\Server\js\pro\bin\Microsoft.NodejsTools.WebRole.dll

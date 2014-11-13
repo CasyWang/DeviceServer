@@ -231,48 +231,60 @@ RolesController.prototype = {
                         username: username,         //用户名
                         password_hash: hash,        //密码哈希加密串
                         salt: salt,                 //salt
-                        access_tokens: []           //验证凭据,此处没有添加access_token
+                        access_tokens: [],          //验证凭据,此处没有添加access_token
+						last_update: Date.now()     //最后更新时间
                     };
 				
 					//TODO: 写入MongoDB非关系型数据库
+					//先查找,找到则不创建
+					/*console.log('ready to find:');					
+					UsersModel.find(function(err, UsersModel) {
+					    if(err) {
+						    console.log(err);
+						} 
+						else {
+						    console.log(UsersModel);
+						}
+					});*/
+					
 					var UserItem = new UsersModel({
 					    _id: userid,                //ID
                         username: username,         //用户名
                         password_hash: hash,        //密码哈希加密串
                         salt: salt,                 //salt
-                        access_tokens: []           //验证凭据,此处没有添加access_token
+                        access_tokens: [],          //验证凭据,此处没有添加access_token
+						//last_update: Date.now()
 					});
 					
 					//保存到数据库
 					console.log("ready to save...");
-					UserItem.save(function(err, UserItem) {
-					    if(err) {
-						    return console.log(err);
-						} else {
-						    return console.log('saved');
-						}
-					});
-					
-					/*UserItem.find(function(err, UserItem) {
-					     if(err) {
-						     console.log(err);
-						 } else {
-						     console.log(UserItem);
-						 }
-					});*/
-					
-					//End
-                    var userFile = path.join(settings.userDataDir, username + ".json");					
-                    fs.writeFileSync(userFile, JSON.stringify(user));        //fs是Posix文件IO的一个Wrapper[file name][data]
-
-                    that.addUser(user);  //添加到user成员变量里
-
-                    tmp.resolve();
+				 												
+					UserItem.saveAsync().then(function() {
+					    //保存到json文件
+                        var userFile = path.join(settings.userDataDir, username + ".json");					
+                        fs.writeFileSync(userFile, JSON.stringify(user));        //fs是Posix文件IO的一个Wrapper[file name][data]
+                        that.addUser(user);  //添加到user成员变量里                         
+					    //Finish
+					}).catch(function(err) {
+					    console.log('error occured while save user, ' + err);
+					}); 
+				    
+				    tmp.resolve();    //web service先返回	
                 });
             });
         });
 
         return tmp.promise;
-    }
+    },
+	
+	//修改用户密码
+	updateUser: function(username, password) {
+	    var tmp = when.defer();
+		var that = this;
+		
+		
+		tmp.resolve();          //promise.js调用这个,告诉后面的then,我做完了,你可以启动了,异步IO里,等待某过程处理完后才执行后面的动作
+		return tmp.promise;     //一定要返回这个
+	}
 };
 module.exports = global.roles = new RolesController();

@@ -35,7 +35,7 @@ global._socket_counter = 1;
 var oauth = OAuthServer({
     model: new OAuth2ServerModel({  }),
     allow: {
-        "post": ['/v1/users'],
+        "post": ['/v1/users'],                                  //此处定义允许不通过access token访问的URL
         "get": ['/server/health', '/v1/access_tokens'],
         "delete": ['/v1/access_tokens/([0-9a-f]{40})']
     },
@@ -76,24 +76,26 @@ var app = express();             //express是一个模型驱动的NodeJS web框�
 /* app.use([path], [function...]) 挂载中间件函数到路径'/',当路径匹配时,函数执行 */
 /* 没有指定路径时,每次请求这些函数都会被执行 */
 app.use(express.logger());
-app.use(express.bodyParser());
+app.use(express.bodyParser());   //BodyParser负责将请求解析成Javascript对象
 app.use(set_cors_headers);
-app.use(oauth.handler());  //任何请求都需要经过认证
+app.use(oauth.handler());        //任何请求都需要经过认证
 app.use(oauth.errorHandler());
 
 //此处实现的是创建新用户的web service
-var UserCreator = require('./lib/UserCreator.js');
-app.post('/v1/users', UserCreator.getMiddleware());       //创建user,将post到url:v1/users重定向至getMiddleware
+//var UserCreator = require('./lib/UserCreator.js');
+//app.post('/v1/users', UserCreator.getMiddleware());              //创建user,将post到url:v1/users重定向至getMiddleware
+//app.post('/v1/users/:username', UserCreator.updatePassword());   //修改user的密码
 
+var usersV1 = require('./views/UserViews.js');
 var api = require('./views/api_v1.js');
 var eventsV1 = require('./views/EventViews001.js');
 var tokenViews = new AccessTokenViews({  });
 
 //MVC model control view 模型,控制器,视图,此处的视图用来生成web service
 eventsV1.loadViews(app);     //event web service
-api.loadViews(app);          //
+api.loadViews(app);          //设备管理web service
 tokenViews.loadViews(app);   //role及access token管理web service
-
+usersV1.loadViews(app);      //User创建web service
 
 app.use(function (req, res, next) {
     return res.send(404);
@@ -107,7 +109,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', function callback() {
     console.log("MongoDB connected!");	
 });
-global.db = db;            //一旦连接成功,把db设置为全局
+//global.db = db;            //一旦连接成功,把db设置为全局
 
 //读取本机的端口
 var node_port = process.env.NODE_PORT || '8080';

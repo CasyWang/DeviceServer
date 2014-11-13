@@ -34,12 +34,41 @@ UserCreator.prototype = {
             .then(callback, callback);
     },
 
+	//update用户的密码
+	update: function (username, password, callback) {
+	    username = username.toLowerCase();
+		roles.updateUser(username, password).
+		    then(callback, callback);
+	},
 
+	//Update用户的密码
+	updatePassword: function() {
+	    var that = this;
+		return function (req, res) {
+		    //如果提供了用户名和密码
+			if((null != req.body.username) && (null != req.body.password)) {
+			    var username = req.body.username.toLowerCase();
+				
+				return that.update(username, req.body.password, function (err) {
+				    if(err) {
+					    return res.json({ok: false, errors: [err] });
+					} 
+					else {
+					    return res.json({ok: true });
+					}
+				})
+			}
+			else {
+			    return res.json({ok: false, errors:['username and password required'] });
+			}			
+		};	    	
+	},
+	
     getMiddleware: function () {
-        var that = this;                  //this可以指向本对象
+        var that = this;                      //this可以指向本对象
         return function (req, res) {
 		    console.log("create user request...");
-		    console.log("req.user: " + req.body.username);
+		    console.log("req.user: " + req.body.username); 
 			console.log("req.pwr: " + req.body.password);
 		    //如果用户名密码不为空
             if ((null != req.body.username) && (null != req.body.password)) {
